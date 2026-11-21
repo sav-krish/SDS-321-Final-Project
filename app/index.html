@@ -1,0 +1,301 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="An interactive demo of how Techinance quizzes can use Bayes' rule to decide when a student has shown they understand a topic."
+    />
+    <meta name="robots" content="noindex,nofollow" />
+        <title>Mastery Tracker · Techinance</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Nunito:wght@400;600;700;800;900&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="icon" href="logo.png" />
+    <link rel="stylesheet" href="site.css" />
+    <link rel="stylesheet" href="tracker.css" />
+    <script type="module" src="nav.js"></script>
+    <script type="module" src="tracker.js"></script>
+  </head>
+  <body>
+    <header class="site-header" data-header>
+      <nav class="navbar" aria-label="Primary navigation">
+        <a class="brand" href="https://techinance.org/" aria-label="Techinance home">
+          <img class="brand__logo" src="logo.png" alt="" width="32" height="32" />
+          <span>Techinance</span>
+        </a>
+
+        <button
+          class="menu-toggle"
+          type="button"
+          aria-expanded="false"
+          aria-controls="mobile-menu"
+          data-menu-toggle
+        >
+          <span>Menu</span>
+          <span class="menu-toggle__lines" aria-hidden="true"></span>
+        </button>
+
+        <div class="desktop-nav">
+          <a class="nav-link" href="https://techinance.org/courses.html">Learn</a>
+          <a class="nav-link" href="https://techinance.org/blogs.html">Blogs</a>
+          <a class="nav-link" href="https://techinance.org/get-involved.html">Work with Us</a>
+          <a class="nav-link" href="https://techinance.org/contact.html">Contact Us</a>
+          <a class="nav-link" href="https://techinance.org/about.html">About</a>
+          <a class="nav-link" href="https://techinance.org/faqs.html">FAQs</a>
+        </div>
+
+        <div class="mobile-nav" id="mobile-menu" data-mobile-menu>
+          <a href="https://techinance.org/courses.html">Learn</a>
+          <a href="https://techinance.org/blogs.html">Blogs</a>
+          <a href="https://techinance.org/get-involved.html">Work with Us</a>
+          <a href="https://techinance.org/contact.html">Contact Us</a>
+          <a href="https://techinance.org/about.html">About</a>
+          <a href="https://techinance.org/faqs.html">FAQs</a>
+          <a href="./" aria-current="page">Mastery Tracker</a>
+        </div>
+      </nav>
+    </header>
+
+    <main class="page tracker-page">
+      <section class="tracker-hero" aria-labelledby="tracker-title">
+        <p class="tracker-eyebrow">SDS 321 Final Project</p>
+        <h1 id="tracker-title">How many questions until we know?</h1>
+        <p class="tracker-lead">
+          Every answer is evidence. A right answer makes us more sure a student understands, a wrong answer makes us
+          less sure, and Bayes' rule says exactly how much. Click through a quiz and watch the belief move.
+        </p>
+      </section>
+
+      <!-- Clicker ---------------------------------------------------------->
+      <section class="tracker-panel" aria-labelledby="clicker-title">
+        <div class="tracker-panel__head">
+          <h2 id="clicker-title">Answer a quiz</h2>
+          <p>Pretend to be the student. Press the buttons, or the R and W keys.</p>
+        </div>
+
+        <div class="tracker-clicker">
+          <div class="tracker-clicker__left">
+            <div class="tracker-belief" aria-live="polite">
+              <p class="tracker-belief__label">Chance the student knows it</p>
+              <p class="tracker-belief__value" data-belief-value>30.0%</p>
+            </div>
+
+            <div class="tracker-meter" role="img" aria-label="Belief meter" data-meter>
+              <div class="tracker-meter__track">
+                <div class="tracker-meter__fill" data-meter-fill></div>
+                <span class="tracker-meter__mark tracker-meter__mark--low" data-mark-low></span>
+                <span class="tracker-meter__mark tracker-meter__mark--high" data-mark-high></span>
+              </div>
+              <div class="tracker-meter__scale">
+                <span data-label-low>not mastered 5%</span>
+                <span data-label-high>mastered 95%</span>
+              </div>
+            </div>
+
+            <p class="tracker-verdict" data-verdict aria-live="polite">Keep asking</p>
+
+            <div class="tracker-actions">
+              <button class="button button--primary" type="button" data-answer="right">Right answer (R)</button>
+              <button class="button button--secondary" type="button" data-answer="wrong">Wrong answer (W)</button>
+            </div>
+            <div class="tracker-actions tracker-actions--small">
+              <button class="tracker-link" type="button" data-undo>Undo</button>
+              <button class="tracker-link" type="button" data-reset>Start over</button>
+            </div>
+
+            <dl class="tracker-stats">
+              <div>
+                <dt>Questions asked</dt>
+                <dd data-stat-count>0</dd>
+              </div>
+              <div>
+                <dt>Odds knows : guessing</dt>
+                <dd data-stat-odds>0.43</dd>
+              </div>
+              <div>
+                <dt>Last answer multiplied odds by</dt>
+                <dd data-stat-factor>none yet</dd>
+              </div>
+            </dl>
+          </div>
+
+          <div class="tracker-clicker__right">
+            <figure class="tracker-chart">
+              <svg viewBox="0 0 520 296" role="img" aria-labelledby="chart-title" data-chart>
+                <title id="chart-title">Belief after each answer</title>
+              </svg>
+              <figcaption>Belief after each answer. Dashed lines are the stopping points.</figcaption>
+            </figure>
+            <ol class="tracker-log" data-log aria-label="Answer log"></ol>
+          </div>
+        </div>
+      </section>
+
+      <!-- The math --------------------------------------------------------->
+      <section class="tracker-panel" aria-labelledby="math-title">
+        <div class="tracker-panel__head">
+          <h2 id="math-title">The math behind the next click</h2>
+          <p>These lines use whatever the belief is right now, so they change as you answer.</p>
+        </div>
+
+        <div class="tracker-math">
+          <div class="tracker-math__sliders">
+            <label class="tracker-slider">
+              <span>Start belief P(knows) <strong data-out="prior">0.30</strong></span>
+              <input type="range" min="0.05" max="0.95" step="0.05" value="0.3" data-param="prior" />
+            </label>
+            <label class="tracker-slider">
+              <span>Right if knows <strong data-out="know">0.90</strong></span>
+              <input type="range" min="0.5" max="0.99" step="0.01" value="0.9" data-param="know" />
+            </label>
+            <label class="tracker-slider">
+              <span>Right if guessing <strong data-out="guess">0.25</strong></span>
+              <input type="range" min="0.1" max="0.5" step="0.05" value="0.25" data-param="guess" />
+            </label>
+          </div>
+
+          <div class="tracker-equations" data-equations>
+            <p class="tracker-equations__title">Law of Total Probability</p>
+            <p class="tracker-equations__line" data-eq-total></p>
+            <p class="tracker-equations__title">Bayes' rule if the next answer is right</p>
+            <p class="tracker-equations__line" data-eq-right></p>
+            <p class="tracker-equations__title">Bayes' rule if the next answer is wrong</p>
+            <p class="tracker-equations__line" data-eq-wrong></p>
+            <p class="tracker-equations__title">Odds form</p>
+            <p class="tracker-equations__line" data-eq-odds></p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Class simulation ------------------------------------------------->
+      <section class="tracker-panel" aria-labelledby="sim-title">
+        <div class="tracker-panel__head">
+          <h2 id="sim-title">Run a whole class</h2>
+          <p>
+            Each simulated student either knows the topic or guesses, then takes the adaptive quiz. Compare it with a
+            fixed five question quiz.
+          </p>
+        </div>
+
+        <div class="tracker-sim">
+          <div class="tracker-sim__controls">
+            <label class="tracker-select">
+              <span>Students</span>
+              <select data-students>
+                <option value="100">100</option>
+                <option value="1000" selected>1,000</option>
+                <option value="10000">10,000</option>
+              </select>
+            </label>
+            <button class="button button--primary" type="button" data-simulate>Simulate class</button>
+          </div>
+
+          <div class="tracker-cards">
+            <article class="tracker-card">
+              <p class="tracker-card__label">Adaptive quiz, exact average</p>
+              <p class="tracker-card__value" data-exact-average>3.17</p>
+              <p class="tracker-card__note">questions per student</p>
+            </article>
+            <article class="tracker-card">
+              <p class="tracker-card__label">Fixed quiz</p>
+              <p class="tracker-card__value">5</p>
+              <p class="tracker-card__note">questions, pass at 4 right</p>
+            </article>
+            <article class="tracker-card tracker-card--accent">
+              <p class="tracker-card__label">Questions saved</p>
+              <p class="tracker-card__value" data-saved>1.83</p>
+              <p class="tracker-card__note">per student</p>
+            </article>
+            <article class="tracker-card">
+              <p class="tracker-card__label">A mastered call is right</p>
+              <p class="tracker-card__value" data-precision>95.7%</p>
+              <p class="tracker-card__note" data-precision-note>fixed quiz: 96.2%</p>
+            </article>
+          </div>
+
+          <figure class="tracker-chart tracker-chart--bars">
+            <svg viewBox="0 0 520 240" role="img" aria-labelledby="hist-title" data-histogram>
+              <title id="hist-title">How many questions each simulated student needed</title>
+            </svg>
+            <figcaption data-sim-caption>Press Simulate class to see how long each student's quiz lasts.</figcaption>
+          </figure>
+        </div>
+      </section>
+
+      <section class="tracker-panel tracker-panel--note" aria-labelledby="notes-title">
+        <h2 id="notes-title">What this assumes</h2>
+        <ul>
+          <li>The student either knows the topic or is guessing. Answers are independent once we know which.</li>
+          <li>The start belief of 0.30 is an assumption for a beginner class, not measured data.</li>
+          <li>The quiz stops at 95% sure (mastered) or 5% sure (not mastered), or after 12 questions.</li>
+          <li>All students here are simulated, so no real learner data is used.</li>
+        </ul>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="site-footer__inner">
+        <div class="site-footer__brand">
+          <a class="site-footer__logo" href="https://techinance.org/" aria-label="Techinance home">
+            <img src="logo.png" alt="" width="32" height="32" />
+            <span>Techinance</span>
+          </a>
+          <p>A registered 501(c)(3) nonprofit organization.</p>
+        </div>
+
+        <div class="site-footer__column">
+          <h2>Quick Links</h2>
+          <a href="https://techinance.org/courses.html">Interactive Courses</a>
+          <a href="https://techinance.org/faqs.html">FAQs</a>
+        </div>
+
+        <div class="site-footer__column">
+          <h2>Work with Us</h2>
+          <a href="https://techinance.org/about.html">About</a>
+          <a href="https://techinance.org/get-involved.html">Work with Us</a>
+          <a href="https://techinance.org/contact.html">Contact Us</a>
+          <a href="https://techinance.org/learn.html">Story Mode</a>
+        </div>
+
+        <div class="site-footer__column">
+          <h2>Legal</h2>
+          <a href="https://techinance.org/privacy.html">Privacy Policy</a>
+          <a href="https://techinance.org/terms.html">Terms of Service</a>
+        </div>
+
+        <div class="site-footer__column">
+          <h2>Connect</h2>
+          <div class="site-footer__social">
+            <a
+              href="https://www.instagram.com/techinance/"
+              aria-label="Techinance on Instagram"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+                <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+                <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+              </svg>
+            </a>
+            <a href="mailto:thetechinance@gmail.com" aria-label="Email Techinance">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                <polyline points="22,6 12,13 2,6"></polyline>
+              </svg>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <div class="site-footer__bottom">
+        <p>© 2026 Techinance. All rights reserved.</p>
+      </div>
+    </footer>
+  </body>
+</html>
