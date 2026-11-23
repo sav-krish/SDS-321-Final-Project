@@ -5,11 +5,10 @@ import {
   beliefPath,
   exactSummary,
   fixedQuiz,
-  likelihoodRatio,
   makeRng,
   probabilityRight,
+  updateBelief,
   simulateClass,
-  toOdds,
   verdictFor,
 } from "./bayes-tracker.js";
 
@@ -82,14 +81,14 @@ const wrongButton = find('[data-answer="wrong"]', HTMLButtonElement);
 const undoButton = find("[data-undo]", HTMLButtonElement);
 const resetButton = find("[data-reset]", HTMLButtonElement);
 const statCount = find("[data-stat-count]", HTMLElement);
-const statOdds = find("[data-stat-odds]", HTMLElement);
-const statFactor = find("[data-stat-factor]", HTMLElement);
+const statIfRight = find("[data-stat-ifright]", HTMLElement);
+const statIfWrong = find("[data-stat-ifwrong]", HTMLElement);
 const chart = find("[data-chart]", SVGElement);
 const log = find("[data-log]", HTMLElement);
 const eqTotal = find("[data-eq-total]", HTMLElement);
 const eqRight = find("[data-eq-right]", HTMLElement);
 const eqWrong = find("[data-eq-wrong]", HTMLElement);
-const eqOdds = find("[data-eq-odds]", HTMLElement);
+const eqChain = find("[data-eq-chain]", HTMLElement);
 const studentsSelect = find("[data-students]", HTMLSelectElement);
 const simulateButton = find("[data-simulate]", HTMLButtonElement);
 const exactAverage = find("[data-exact-average]", HTMLElement);
@@ -176,12 +175,13 @@ function drawEquations(belief) {
   eqRight.textContent = `P(knows | right) = ${fixed(know, 2)}(${b}) / ${fixed(pRight, 3)} = ${fixed((know * belief) / pRight, 3)}`;
   eqWrong.textContent = `P(knows | wrong) = ${fixed(1 - know, 2)}(${b}) / ${fixed(pWrong, 3)} = ${fixed(((1 - know) * belief) / pWrong, 3)}`;
 
-  const odds = toOdds(belief);
-  eqOdds.textContent =
-    `odds = ${b} / ${notB} = ${fixed(odds, 3)}\n` +
-    `right: ${fixed(odds, 3)} x ${fixed(likelihoodRatio(true, params), 2)} = ${fixed(odds * likelihoodRatio(true, params), 3)}\n` +
-    `wrong: ${fixed(odds, 3)} x ${fixed(likelihoodRatio(false, params), 3)} = ${fixed(odds * likelihoodRatio(false, params), 3)}`;
-  eqOdds.style.whiteSpace = "pre-line";
+  const afterOne = updateBelief(belief, true, params);
+  const afterTwo = updateBelief(afterOne, true, params);
+  eqChain.textContent =
+    `now: P(knows) = ${b}\n` +
+    `one more right: P(knows) = ${fixed(afterOne, 3)}\n` +
+    `another right: P(knows) = ${fixed(afterTwo, 3)}`;
+  eqChain.style.whiteSpace = "pre-line";
 }
 
 /** Update the whole quiz side of the page. */
@@ -208,11 +208,8 @@ function renderQuiz() {
   resetButton.disabled = answers.length === 0;
 
   statCount.textContent = String(answers.length);
-  statOdds.textContent = fixed(toOdds(belief), 2);
-  statFactor.textContent =
-    answers.length === 0
-      ? "none yet"
-      : `x ${fixed(likelihoodRatio(answers[answers.length - 1], params), answers[answers.length - 1] ? 1 : 3)}`;
+  statIfRight.textContent = percent(updateBelief(belief, true, params));
+  statIfWrong.textContent = percent(updateBelief(belief, false, params));
 
   drawBeliefChart(path);
   drawLog(path);

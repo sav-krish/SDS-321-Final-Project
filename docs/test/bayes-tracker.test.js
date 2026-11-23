@@ -6,11 +6,9 @@ import {
   binomialAtLeast,
   exactSummary,
   fixedQuiz,
-  likelihoodRatio,
   makeRng,
   probabilityRight,
   simulateClass,
-  toOdds,
   updateBelief,
   verdictFor,
 } from "../bayes-tracker.js";
@@ -24,14 +22,13 @@ test("one answer follows Bayes' rule with the Law of Total Probability", () => {
   close(updateBelief(0.3, false, DEFAULT_PARAMS), 0.03 / 0.555);
 });
 
-test("the odds form agrees with Bayes' rule", () => {
-  close(likelihoodRatio(true, DEFAULT_PARAMS), 3.6);
-  close(likelihoodRatio(false, DEFAULT_PARAMS), 2 / 15);
-  for (const correct of [true, false]) {
-    const viaBayes = updateBelief(0.3, correct, DEFAULT_PARAMS);
-    const odds = toOdds(0.3) * likelihoodRatio(correct, DEFAULT_PARAMS);
-    close(viaBayes, odds / (1 + odds));
-  }
+test("each posterior becomes the next prior", () => {
+  const one = updateBelief(0.3, true, DEFAULT_PARAMS);
+  const two = updateBelief(one, true, DEFAULT_PARAMS);
+  const three = updateBelief(two, true, DEFAULT_PARAMS);
+  close(one, 0.607);
+  close(two, 0.847);
+  close(three, 0.952);
 });
 
 test("three right answers in a row reach the mastered line", () => {

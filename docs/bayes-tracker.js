@@ -52,24 +52,6 @@ export function updateBelief(belief, correct, params) {
   return numerator / (numerator + likeGuess * (1 - belief));
 }
 
-/**
- * Odds form of Bayes' rule: posterior odds = prior odds x likelihood ratio.
- * @param {boolean} correct
- * @param {Params} params
- * @returns {number}
- */
-export function likelihoodRatio(correct, params) {
-  return correct ? params.know / params.guess : (1 - params.know) / (1 - params.guess);
-}
-
-/**
- * @param {number} probability
- * @returns {number}
- */
-export function toOdds(probability) {
-  return probability / (1 - probability);
-}
-
 /** @typedef {"continue" | "mastered" | "not-mastered" | "undecided"} Verdict */
 
 /**
